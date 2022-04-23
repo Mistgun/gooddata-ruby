@@ -30,6 +30,7 @@ module GoodData
       # @param query_obj_type [String] string used in URI to distinguish different query resources for different objects
       # @param klass [Class] A class used for instantiating the returned data
       # @param options [Hash] the options hash
+      # @option options [Boolean] :include_deprecated if passed true then response will also contain deprecated items
       # @option options [Boolean] :full if passed true the subclass can
       # decide to pull in full objects. This is desirable from the usability
       # POV but unfortunately has negative impact on performance so it is
@@ -47,9 +48,10 @@ module GoodData
 
         offset = 0
         page_limit = 50
+        deprecated = options[:include_deprecated] ? '1' : '0'
         Enumerator.new do |y|
           loop do
-            result = client.get(project.md['objects'] + '/query', params: { category: query_obj_type, limit: page_limit, offset: offset })
+            result = client.get(project.md['objects'] + '/query', params: { category: query_obj_type, deprecated: deprecated, limit: page_limit, offset: offset })
             result['objects']['items'].each do |item|
               y << (klass ? client.create(klass, item, project: project) : item)
             end
